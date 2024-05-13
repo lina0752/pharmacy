@@ -1,16 +1,16 @@
-'''Photoapp URL patterns'''
+
 from django.views.generic import TemplateView
 from django.urls import path
 
-from medicine.views import StockItemList, StockItemDetail, StockItemCreate, StockItemUpdate, StockItemDelete
+from medicine.views import MListView, MDetailView, MCreateView, MUpdateView, MDeleteView
 
-app_name = 'photo'
+app_name = 'medicine'
 
 urlpatterns = [
-    path('', StockItemList.as_view(), name='list'),
-    path('photo/<int:pk>/', StockItemDetail.as_view(), name='detail'),
-    path('photo/create/', StockItemCreate.as_view(), name='create'),
-    path('photo/<int:pk>/update/', StockItemUpdate.as_view(), name='update'),
-    path('photo/<int:pk>/delete/', StockItemDelete.as_view(), name='delete'),
+    path('', MListView.as_view(), name='list'),
+    path('medicine/<int:pk>/', MDetailView.as_view(), name='detail'),
+    path('medicine/create/', MCreateView.as_view(), name='create'),
+    path('medicine/<int:pk>/update/', MUpdateView.as_view(), name='update'),
+    path('medicine/<int:pk>/delete/', MDeleteView.as_view(), name='delete'),
 ]
 

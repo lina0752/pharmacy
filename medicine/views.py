@@ -1,84 +1,64 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-# from django.core.exceptions import PermissionDenied
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, PermissionRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-# from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import StockItem
+from .models import Medicine
 
-class StockItemList(LoginRequiredMixin, ListView):
-    model = StockItem
+
+class MListView(ListView):
+    model = Medicine
     template_name = 'medicine/list.html'
-    context_object_name = 'stock_items'
+    context_object_name = 'medicine'
 
-class StockItemDetail(LoginRequiredMixin, DetailView):
-    model = StockItem
+
+class MDetailView(DetailView):
+    model = Medicine
     template_name = 'medicine/detail.html'
-    context_object_name = 'stock_item'
+    context_object_name = 'medicine'
 
-class StockItemCreate(LoginRequiredMixin, CreateView):
-    model = StockItem
-    fields = ['medicine', 'quantity', 'price', 'expiration_date']
+
+class MCreateView(LoginRequiredMixin, CreateView):
+    model = Medicine
+    fields = ['title', 'description', 'image']
     template_name = 'medicine/create.html'
     success_url = reverse_lazy('medicine:list')
 
     def form_valid(self, form):
         form.instance.submitter = self.request.user
+
         return super().form_valid(form)
 
-class StockItemUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = StockItem
-    fields = ['medicine', 'quantity', 'price', 'expiration_date']
+
+class UserIsSubmitter(UserPassesTestMixin):
+    # Custom method
+    def get_photo(self):
+        return get_object_or_404(Medicine, pk=self.kwargs.get('pk'))
+
+    def test_func(self):
+        if self.request.user.is_authenticated:
+            return self.request.user == self.get_photo().submitter
+        else:
+            raise PermissionDenied('Sorry you are not allowed here')
+
+
+class OwnerMixin(object):
+    def get_queryset(self):
+        qs = super(OwnerMixin, self).get_queryset()
+        return qs.filter(submitter=self.request.user)
+
+
+# class PhotoUpdateView(UserPassesTestMixin, UpdateView):
+class MUpdateView(LoginRequiredMixin, OwnerMixin, UpdateView):
     template_name = 'medicine/update.html'
+    model = Medicine
+    fields = ['title', 'description', 'image']
     success_url = reverse_lazy('medicine:list')
 
-    def test_func(self):
-        stock_item = self.get_object()
-        return self.request.user == stock_item.submitter
 
-class StockItemDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = StockItem
+class MDeleteView(PermissionRequiredMixin, DeleteView ):
+    # specify the model you want to use
+    model = Medicine
+    success_url = reverse_lazy('medicine:list')
     template_name = 'medicine/delete.html'
-    success_url = reverse_lazy('medicine:list')
-
-    def test_func(self):
-        stock_item = self.get_object()
-        return self.request.user == stock_item.submitter
-
-# class SaleList(LoginRequiredMixin, ListView):
-#     model = Sale
-#     template_name = 'medicine/sale_list.html'
-#     context_object_name = 'sales'
-#
-# class SaleDetail(LoginRequiredMixin, DetailView):
-#     model = Sale
-#     template_name = 'medicine/sale_detail.html'
-#     context_object_name = 'sale'
-#
-# class SaleCreate(LoginRequiredMixin, CreateView):
-#     model = Sale
-#     fields = ['stock_item', 'quantity_sold', 'total_price']
-#     template_name = 'medicine/sale_create.html'
-#     success_url = reverse_lazy('medicine:sale_list')
-#
-#     def form_valid(self, form):
-#         form.instance.sold_by = self.request.users
-#         return super().form_valid(form)
-#
-# class SaleUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-#     model = Sale
-#     fields = ['stock_item', 'quantity_sold', 'total_price']
-#     template_name = 'medicine/sale_update.html'
-#     success_url = reverse_lazy('medicine:sale_list')
-#
-#     def test_func(self):
-#         sale = self.get_object()
-#         return self.request.users == sale.sold_by
-#
-# class SaleDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-#     model = Sale
-#     template_name = 'medicine/sale_delete.html'
-#     success_url = reverse_lazy('medicine:sale_list')
-#
-#     def test_func(self):
-#         sale = self.get_object()
-#         return self.request.users == sale.sold_by
+    permission_required = 'medicine.can_delete'

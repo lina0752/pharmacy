@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-md navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Photo App</a>
+      <a class="navbar-brand" href="#">MED STOCK</a>
       <button
         class="navbar-toggler"
         type="button"
@@ -20,17 +20,17 @@
           {% if user.is_authenticated %}
   
           <li class="nav-item">
-            <a class="nav-link active" href="#">Add a photo</a>
-  {#          <a class="nav-link active" href="{% url 'photo:create' %}">Add a photo</a>#}
+            <a class="nav-link active" href="#">Add an item</a>
+  {#          <a class="nav-link active" href="{% url 'medicine:create' %}">Add an item</a>#}
           </li>
           <li class="nav-item">
             <a class="nav-link active" href="#">Hi {{user.username}}</a>
           </li>
             <li class="nav-item">
-  {#             <a class="nav-link" href="{% url 'user:logout' %}">Logout</a>#}
+  {#             <a class="nav-link" href="{% url 'users:logout' %}">Logout</a>#}
   
   
-              <form method="post" action="{% url 'user:logout' %}">
+              <form method="post" action="{% url 'users:logout' %}">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-danger">Logout</button>
               </form>
@@ -39,7 +39,7 @@
           {% else %}
   
           <li class="nav-item">
-            <a href="{% url 'user:login' %}" class="btn btn-sm btn-danger"
+            <a href="{% url 'users:login' %}" class="btn btn-sm btn-danger"
               >Sign In</a
             >
           </li>
